@@ -1,8 +1,8 @@
 Package.describe({
   name: "kschingiz:publish-lookups",
-  version: "1.0.0",
+  version: "1.0.1",
   summary: "Publish collection lookups (joins)",
-  git: "",
+  git: "https://github.com/kschingiz/publish-lookups",
   documentation: "README.md"
 });
 
