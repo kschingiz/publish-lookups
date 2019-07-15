@@ -1,7 +1,5 @@
-/* eslint-disable import/no-unresolved */
+/* eslint-disable no-undef */
 /* eslint-disable import/prefer-default-export */
-
-import { Meteor } from 'meteor/meteor';
 
 const timeoutMs = 100;
 export const debounced = fn => {
