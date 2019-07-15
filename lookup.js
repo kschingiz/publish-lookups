@@ -138,7 +138,7 @@ class PublishLookup {
   }
 
   stop() {
-    if (primaryObserver) {
+    if (this.primaryObserver) {
       this.primaryObserver.stop();
     }
     this.lookupObservers.forEach(observer => {
