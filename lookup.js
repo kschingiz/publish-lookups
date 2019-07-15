@@ -1,4 +1,4 @@
-import { debounced } from "./utils";
+import { debounced } from './utils';
 
 class PublishLookup {
   constructor(collection, selector, options, lookups) {
@@ -42,24 +42,21 @@ class PublishLookup {
         .find({ _id: { $in: primaryDocsIds } }, { fields: lookupFields })
         .fetch();
 
-      const localFieldValues = Object.keys(lookupFields).reduce(
-        (acc, localField) => {
-          acc[localField] = [];
+      const localFieldValues = Object.keys(lookupFields).reduce((acc, localField) => {
+        acc[localField] = [];
 
-          primaryDocs.forEach(doc => {
-            if (doc[localField] !== null && doc[localField] !== undefined) {
-              acc[localField].push(doc[localField]);
-            }
-          });
+        primaryDocs.forEach(doc => {
+          if (doc[localField] !== null && doc[localField] !== undefined) {
+            acc[localField].push(doc[localField]);
+          }
+        });
 
-          return acc;
-        },
-        {}
-      );
+        return acc;
+      }, {});
 
       this.lookupObservers = lookups.map(
         ({
-          collection,
+          collection: childCollection,
           localField,
           foreignField,
           selector = {},
@@ -70,17 +67,17 @@ class PublishLookup {
             [foreignField]: { $in: localFieldValues[localField] }
           };
 
-          const joinedDocsCursor = collection.find(joinQuery, options);
+          const joinedDocsCursor = childCollection.find(joinQuery, options);
 
           const observer = joinedDocsCursor.observeChanges({
             added: (id, fields) => {
-              sub.added(collection._name, id, fields);
+              sub.added(childCollection._name, id, fields);
             },
             changed: (id, fields) => {
-              sub.changed(collection._name, id, fields);
+              sub.changed(childCollection._name, id, fields);
             },
             removed: id => {
-              sub.removed(collection._name, id);
+              sub.removed(childCollection._name, id);
             }
           });
 
@@ -117,9 +114,7 @@ class PublishLookup {
         const lookupFieldsKeys = Object.keys(this.lookupFields);
         const changedKeys = Object.keys(fields);
 
-        const intersection = lookupFieldsKeys.filter(value =>
-          changedKeys.includes(value)
-        );
+        const intersection = lookupFieldsKeys.filter(value => changedKeys.includes(value));
 
         const isLookupFieldChanged = intersection.length > 0;
 

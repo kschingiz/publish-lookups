@@ -1,0 +1,34 @@
+{
+  "name": "publish-lookups",
+  "version": "1.0.0",
+  "description": "Package to publish collection lookups (joins)",
+  "main": "publish-lookups.js",
+  "scripts": {
+    "lint": "eslint ./",
+    "test": "jest --coverage",
+    "report-coverage": "codecov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kschingiz/publish-lookups.git"
+  },
+  "author": "@kschingiz Kengessov Shynggys",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kschingiz/publish-lookups/issues"
+  },
+  "homepage": "https://github.com/kschingiz/publish-lookups#readme",
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "babel-jest": "^24.8.0",
+    "babel-preset-env": "^1.7.0",
+    "codecov": "^3.5.0",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "jest": "^24.8.0",
+    "prettier": "1.15.2"
+  }
+}
