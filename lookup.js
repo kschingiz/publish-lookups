@@ -10,10 +10,10 @@ class PublishLookup {
     this.lookupObservers = [];
 
     this.calculateLookupFields();
-    // this.republishLookups = debounced(this.republishLookups.bind(this));
-    // this.republishChildLookups = debounced(
-    //   this.republishChildLookups.bind(this)
-    // );
+    this.republishLookups = debounced(this.republishLookups.bind(this));
+    this.republishChildLookups = debounced(
+      this.republishChildLookups.bind(this)
+    );
 
     this.childLookups = [];
   }
@@ -105,9 +105,9 @@ class PublishLookup {
               console.log(collection._name, id, fields);
               sub.added(collection._name, id, fields);
 
-              // if (lookups.length) {
-              //   this.republishChildLookups();
-              // }
+              if (lookups.length) {
+                this.republishChildLookups();
+              }
             },
             changed: (id, fields) => {
               sub.changed(collection._name, id, fields);
