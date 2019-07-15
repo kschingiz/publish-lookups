@@ -10,7 +10,12 @@ class PublishLookup {
     this.lookupObservers = [];
 
     this.calculateLookupFields();
-    this.republishLookups = debounced(this.republishLookups.bind(this));
+    // this.republishLookups = debounced(this.republishLookups.bind(this));
+    // this.republishChildLookups = debounced(
+    //   this.republishChildLookups.bind(this)
+    // );
+
+    this.childLookups = [];
   }
 
   _getCollectionName() {
@@ -28,12 +33,19 @@ class PublishLookup {
     this.lookupFields = lookupFields;
   }
 
+  republishChildLookups() {
+    this.childLookups.forEach(publishLookup => {
+      publishLookup.republishLookups();
+    });
+  }
+
   republishLookups() {
     const { collection, sub, lookups, lookupFields } = this;
 
     const addedPrimaryDocIds = sub._documents.get(collection._name);
 
     this.lookupObservers.forEach(observer => observer.stop());
+    this.childLookups.forEach(publishLookup => publishLookup.stop());
 
     if (addedPrimaryDocIds) {
       const primaryDocsIds = Array.from(addedPrimaryDocIds.keys());
@@ -57,13 +69,15 @@ class PublishLookup {
         {}
       );
 
+      console.log(lookups);
       this.lookupObservers = lookups.map(
         ({
           collection,
           localField,
           foreignField,
           selector = {},
-          options = {}
+          options = {},
+          lookups: []
         }) => {
           const joinQuery = {
             ...selector,
@@ -72,15 +86,42 @@ class PublishLookup {
 
           const joinedDocsCursor = collection.find(joinQuery, options);
 
+          if (lookups.length) {
+            const childLookup = new PublishLookup(
+              collection,
+              joinQuery,
+              options,
+              lookup
+            );
+
+            childLookup.sub = sub;
+            childLookup.calculateLookupFields();
+
+            this.childLookups.push(childLookup);
+          }
+
           const observer = joinedDocsCursor.observeChanges({
             added: (id, fields) => {
+              console.log(collection._name, id, fields);
               sub.added(collection._name, id, fields);
+
+              // if (lookups.length) {
+              //   this.republishChildLookups();
+              // }
             },
             changed: (id, fields) => {
               sub.changed(collection._name, id, fields);
+
+              if (lookups.length) {
+                this.republishChildLookups();
+              }
             },
             removed: id => {
               sub.removed(collection._name, id);
+
+              if (lookups.length) {
+                this.republishChildLookups();
+              }
             }
           });
 
@@ -143,6 +184,10 @@ class PublishLookup {
     }
     this.lookupObservers.forEach(observer => {
       observer.stop();
+    });
+
+    this.childLookups.forEach(publishLookup => {
+      publishLookup.stop();
     });
   }
 }
