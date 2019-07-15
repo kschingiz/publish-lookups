@@ -33,9 +33,9 @@ class PublishLookup {
     this.lookupFields = lookupFields;
   }
 
-  republishChildLookups() {
+  republishChildLookups(lookups) {
     this.childLookups.forEach(publishLookup => {
-      publishLookup.republishLookups();
+      publishLookup.publishLookups();
     });
   }
 
@@ -46,6 +46,7 @@ class PublishLookup {
 
     this.lookupObservers.forEach(observer => observer.stop());
     this.childLookups.forEach(publishLookup => publishLookup.stop());
+    this.childLookups = [];
 
     if (addedPrimaryDocIds) {
       const primaryDocsIds = Array.from(addedPrimaryDocIds.keys());
@@ -69,7 +70,6 @@ class PublishLookup {
         {}
       );
 
-      console.log(lookups);
       this.lookupObservers = lookups.map(
         ({
           collection,
@@ -77,7 +77,7 @@ class PublishLookup {
           foreignField,
           selector = {},
           options = {},
-          lookups: []
+          lookups = []
         }) => {
           const joinQuery = {
             ...selector,
@@ -91,7 +91,7 @@ class PublishLookup {
               collection,
               joinQuery,
               options,
-              lookup
+              lookups
             );
 
             childLookup.sub = sub;
@@ -102,26 +102,19 @@ class PublishLookup {
 
           const observer = joinedDocsCursor.observeChanges({
             added: (id, fields) => {
-              console.log(collection._name, id, fields);
               sub.added(collection._name, id, fields);
 
-              if (lookups.length) {
-                this.republishChildLookups();
-              }
+              this.republishChildLookups();
             },
             changed: (id, fields) => {
               sub.changed(collection._name, id, fields);
 
-              if (lookups.length) {
-                this.republishChildLookups();
-              }
+              this.republishChildLookups();
             },
             removed: id => {
               sub.removed(collection._name, id);
 
-              if (lookups.length) {
-                this.republishChildLookups();
-              }
+              this.republishChildLookups();
             }
           });
 
@@ -179,7 +172,7 @@ class PublishLookup {
   }
 
   stop() {
-    if (primaryObserver) {
+    if (this.primaryObserver) {
       this.primaryObserver.stop();
     }
     this.lookupObservers.forEach(observer => {
@@ -189,6 +182,9 @@ class PublishLookup {
     this.childLookups.forEach(publishLookup => {
       publishLookup.stop();
     });
+
+    this.lookupObservers = [];
+    this.childLookups = [];
   }
 }
 
